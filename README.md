@@ -14,20 +14,19 @@ composer require cmtickle/module-elastic-apm:dev-develop  nipwaayoni/elastic-apm
 2) Create a file at `app/etc/apm.php` based on the below, containing values appropriate to your environment.
 ```php
  <?php
-
 return [
     'serverUrl'             => 'http://apm-server:8200',
-    'secretToken'           => null,
-    'hostname'              => 'localhost',
-    'serviceName'           => 'magento',
+    'enabled'               => true,
+    'transactionSampleRate' => 1, // Decimal, 0 to 1 .. e.g. 0.5 = 50% of transactions traced, 1 = 100%.
+    'serviceName'           => 'magento', // Overridden by $_SERVER['HTTP_HOST'], special characters replaced with hyphens.
+    'hostname'              => 'localhost', // Overridden by $_SERVER['HOSTNAME'].
+    'environment'           => 'local',
+    'stackTraceLimit'       => 1000,
+    /*'secretToken'           => null,
     'serviceVersion'        => null,
     'frameworkName'         => 'magento2',
     'frameworkVersion'      => '2.4.5-p1',
-    'enabled'               => true,
-    'timeout'               => 10,
-    'environment'           => 'local',
-    'stackTraceLimit'       => 1000,
-    'transactionSampleRate' => 1,
+    'timeout'               => 10,*/
 ];
 ```
 
@@ -35,3 +34,11 @@ return [
 ```bash
 bin/magento dev:profiler:enable '{"drivers":[{"type":"Cmtickle\\ElasticApm\\Profiler\\Driver"}]}'
 ```
+
+## Thanks
+
+[Holdenovi_Profiler](https://github.com/perryholden/Holdenovi_Profiler): Really helpful as a reference for a Magento 2 
+Profiler Driver.
+
+[Elastic APM, Laravel Driver](https://github.com/arkaitzgarro/elastic-apm-laravel/): My reference for how to call Elastic 
+APM from PHP. 

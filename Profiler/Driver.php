@@ -4,9 +4,10 @@ namespace Cmtickle\ElasticApm\Profiler;
 
 use GuzzleHttp\Client;
 use Magento\Framework\Profiler\DriverInterface;
-use Nipwaayoni\Config;
+use Cmtickle\ElasticApm\Apm\Config;
 use Nipwaayoni\AgentBuilder;
 use Nipwaayoni\ApmAgent;
+use Nipwaayoni\Events\Span;
 use Nipwaayoni\Events\Transaction;
 use Nipwaayoni\Exception\ConfigurationException;
 use Nipwaayoni\Exception\MissingServiceNameException;
@@ -14,22 +15,29 @@ use Nipwaayoni\Exception\Helper\UnsupportedConfigurationValueException;
 
 class Driver implements DriverInterface
 {
-    const APM_CONFIG = "app/etc/apm.php";
-
     /**
      * @var array
      */
-    private array $config;
+    private array $driverConfig;
+    /**
+     * @var Config
+     */
+    private Config $apmConfig;
 
     /**
-     * @var ApmAgent
+     * @var ApmAgent|null
      */
-    protected ApmAgent $agent;
+    private ApmAgent $agent;
 
     /**
      * @var Transaction
      */
-    protected Transaction $transaction;
+    private Transaction $transaction;
+
+    /**
+     * @var Span[]
+     */
+    public static array $callStack = [];
 
     /**
      * @param array $config
@@ -37,7 +45,7 @@ class Driver implements DriverInterface
     public function __construct(
         array $config
     ) {
-        $this->config = $config;
+        $this->driverConfig = $config;
         $this->init();
         register_shutdown_function([$this, 'send']);
     }
@@ -49,39 +57,74 @@ class Driver implements DriverInterface
      */
     public function init()
     {
-        $apmConfigFile = $this->config['baseDir'] . DIRECTORY_SEPARATOR . self::APM_CONFIG;
-        if (!file_exists($apmConfigFile)) {
-            throw new ConfigurationException(self::APM_CONFIG . " not available");
-        }
-
-        $nipwaayoniConfig = new Config(include $apmConfigFile);
-
+        $this->apmConfig = new Config($this->driverConfig);
         $this->agent = (new AgentBuilder())
-            ->withConfig($nipwaayoniConfig)
+            ->withConfig($this->apmConfig)
             ->withHttpClient(new Client() )
             ->build();
 
-        $this->transaction = $this->agent->startTransaction('Test of module');
+        $this->transaction = $this->agent->startTransaction($_SERVER['REQUEST_URI']);
     }
 
+    /**
+     * @param $timerId
+     * @return string
+     */
+    private function shortenTimerId($timerId)
+    {
+        list($timerId) = array_reverse(explode('>', $timerId));
+        return $timerId;
+    }
+
+    /**
+     * @param $timerId
+     * @param array|null $tags
+     * @return void
+     * @throws \Nipwaayoni\Exception\Timer\AlreadyRunningException
+     */
     public function start($timerId, array $tags = null)
     {
+        if ($this->apmConfig->notEnabled()) {
+            return;
+        }
 
+        $callDepth = count(self::$callStack);
+        $parent = $callDepth ? self::$callStack[$callDepth - 1] : $this->transaction;
+        $event = $this->agent->factory()->newSpan($this->shortenTimerId($timerId), $parent);
+        $event->start();
+        self::$callStack[] = $event;
     }
 
+    /**
+     * @param $timerId
+     * @return void
+     */
     public function stop($timerId)
     {
+        if ($this->apmConfig->notEnabled()) {
+            return;
+        }
+        $event = array_pop(self::$callStack);
+        $event->stop();
+        $this->agent->putEvent($event);
+        $callDepth = count(self::$callStack);
     }
 
+    /**
+     * @param $timerId
+     * @return void
+     */
     public function clear($timerId = null)
     {
     }
 
+    /**
+     * @return void
+     */
     public function send()
     {
         $this->agent->stopTransaction($this->transaction->getTransactionName(), [
-            'status'  => '200',
-            'payload' => [ 'foo' => 'bar' ],
+            'status'  => '200'
         ]);
 
         $this->agent->send();
