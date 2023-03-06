@@ -37,6 +37,9 @@ bin/magento dev:profiler:enable '{"drivers":[{"type":"Cmtickle\\ElasticApm\\Prof
 
 ## Thanks
 
+[Elastic APM: PHP Agent](https://github.com/nipwaayoni/elastic-apm-php-agent/): The integration agent this module depends 
+on.
+
 [Holdenovi_Profiler](https://github.com/perryholden/Holdenovi_Profiler): Really helpful as a reference for a Magento 2 
 Profiler Driver.
 
