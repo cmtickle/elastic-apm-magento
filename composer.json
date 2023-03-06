@@ -1,0 +1,20 @@
+{
+    "name": "cmtickle/module-elastic-apm",
+    "description": "N/A",
+    "type": "magento2-module",
+    "license": [
+        "MIT"
+    ],
+    "require": {
+        "magento/framework": ">=101.0.0",
+        "nipwaayoni/elastic-apm-php-agent": "dev-elastic-apm-magento@dev"
+    },
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Cmtickle\\ElasticApm\\": ""
+        }
+    }
+}
