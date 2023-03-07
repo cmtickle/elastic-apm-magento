@@ -77,6 +77,30 @@ class Driver implements DriverInterface
     }
 
     /**
+     * @return Span
+     * @throws \Nipwaayoni\Exception\Timer\AlreadyRunningException
+     */
+    public function createSpan($timerId, array $tags)
+    {
+        $timerId = $this->shortenTimerId($timerId);
+        $callDepth = count(self::$callStack);
+        $parent = $callDepth ? self::$callStack[$callDepth - 1] : $this->transaction;
+        $event = $this->agent->factory()->newSpan($timerId, $parent);
+        $event->setType('app.internal');
+
+        if (strstr($timerId, 'DB_QUERY') && isset($tags['statement'])) {
+            $event->setType('db.mysql.query');
+            $event->setAction('query');
+            $event->setCustomContext(['db' => [
+                'statement' => $tags['statement'], // the query being executed
+                'type'      => 'sql',
+            ]]);
+        }
+
+        return $event;
+    }
+
+    /**
      * @param $timerId
      * @param array|null $tags
      * @return void
@@ -88,10 +112,9 @@ class Driver implements DriverInterface
             return;
         }
 
-        $callDepth = count(self::$callStack);
-        $parent = $callDepth ? self::$callStack[$callDepth - 1] : $this->transaction;
-        $event = $this->agent->factory()->newSpan($this->shortenTimerId($timerId), $parent);
+        $event = $this->createSpan($timerId, $tags ?? []);
         $event->start();
+
         self::$callStack[] = $event;
     }
 

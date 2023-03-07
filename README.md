@@ -35,6 +35,14 @@ return [
 bin/magento dev:profiler:enable '{"drivers":[{"type":"Cmtickle\\ElasticApm\\Profiler\\Driver"}]}'
 ```
 
+4) (Optionally) Enable the database profiler
+Edit `app/etc/env.php` and add the below underneath `db > connection > default`
+```php
+                'profiler' => [
+                    'class' => '\\Cmtickle\\ElasticApm\\Profiler\\Db',
+                    'enabled' => true
+                ],
+```
 ## Thanks
 
 [Elastic APM: PHP Agent](https://github.com/nipwaayoni/elastic-apm-php-agent/): The integration agent this module depends 
