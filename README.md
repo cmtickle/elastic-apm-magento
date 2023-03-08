@@ -7,7 +7,6 @@ Stability : Experimental, work (very much) in early stages.
 1) Install the module with composer
 ```bash
 composer config repositories.cmtickle/module-elastic-apm vcs https://github.com/cmtickle/elastic-apm-magento.git
-composer config repositories.nipwaayoni/elastic-apm-php-agent vcs https://github.com/cmtickle/elastic-apm-php-agent.git
 composer require cmtickle/module-elastic-apm:dev-develop  nipwaayoni/elastic-apm-php-agent:dev-elastic-apm-magento@dev
 ```
 
