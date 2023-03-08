@@ -7,7 +7,7 @@
     ],
     "require": {
         "magento/framework": ">=101.0.0",
-        "nipwaayoni/elastic-apm-php-agent": "dev-8.1-dev#2a4baba"
+        "nipwaayoni/elastic-apm-php-agent": "dev-8.1-dev#2a4baba@dev"
     },
     "autoload": {
         "files": [
