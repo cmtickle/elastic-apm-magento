@@ -2,6 +2,9 @@
 
 Stability : Experimental, work (very much) in early stages.
 
+![Screenshot of Magento Elastic APM trace](./public/apm-screenshot.png?raw=true "Screenshot of Magento Elastic APM trace")
+![Screenshot of Magento Elastic APM trace showing MySQL query](./public/apm-screenshot-2.png?raw=true "Screenshot of Magento Elastic APM trace showing MySQL query.")
+
 ## Installation:
 
 1) Install the module with composer
@@ -42,6 +45,24 @@ Edit `app/etc/env.php` and add the below underneath `db > connection > default`
                     'enabled' => true
                 ],
 ```
+
+## Running Kibana + Elastic APM:
+
+A sample docker-compose file is included which provisions Elastic APM, Elasticsearch and Kibana accordingly.
+
+To use these, you will need to have a working Docker install and the docker-compose tool. Once these are in place, follow 
+the instructions below.
+
+* Go to this module folder (usually `cd ./vendor/cmtickle/module-elastic-apm`).
+* Start the services with docker-compose `docker-compose -f docker/docker-compose.yml up`
+* Access Kibana with a web browser [http://127.0.0.1:5601/](http://127.0.0.1:5601/)
+* Under the 'Observability' menu, you will find APM. At this point, there will be no data logged.
+* Configure this module in your instance of Magento, per the above instructions, to point at `'serverUrl' => 'http://127.0.0.1:8200',`
+* Load a page in Magento a few times and check back under the APM tab in Kibana a few minutes. 
+
+Barring any local networking issues with Magento > APM, you should now see APM data. For the MySQL traces (if you enabled 
+these) you can click on these and see which query was being performed.
+
 ## Thanks
 
 [Elastic APM: PHP Agent](https://github.com/nipwaayoni/elastic-apm-php-agent/): The integration agent this module depends 
